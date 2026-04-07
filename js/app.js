@@ -27,8 +27,6 @@
   const fieldListEl = $('#fieldList');
   const previewEl = $('#previewHtml');
   const addFieldGridEl = $('#addFieldGrid');
-  const themeSelectorWrap = $('#themeSelectorWrap');
-  const customColorWrap = $('#customColorWrap');
   const toastContainer = $('#toastContainer');
 
   /* ══════════════════════════════════════════════════════════
@@ -37,7 +35,6 @@
   function init() {
     loadSavedState();
     renderAddFieldButtons();
-    renderThemeUI();
     renderFieldList();
     refreshPreview();
 
@@ -250,75 +247,6 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     테마 UI
-     ══════════════════════════════════════════════════════════ */
-  function renderThemeUI() {
-    themeSelectorWrap.innerHTML = renderThemeSelector();
-    customColorWrap.innerHTML = renderCustomColorEditor();
-    bindThemeEvents();
-  }
-
-  function bindThemeEvents() {
-    // 프리셋 선택
-    themeSelectorWrap.querySelectorAll('.theme-card').forEach(card => {
-      card.addEventListener('click', () => {
-        selectTheme(card.dataset.themeKey);
-        renderThemeUI();
-        refreshPreview();
-        saveState();
-        showToast(`테마 변경: ${THEME_PRESETS[card.dataset.themeKey]?.name || ''}`, 'success');
-      });
-    });
-
-    // 커스텀 색상 input (color picker)
-    customColorWrap.querySelectorAll('.custom-color-input').forEach(input => {
-      input.addEventListener('input', () => {
-        updateCustomVar(input.dataset.var, input.value);
-        // 텍스트 input 동기화
-        const textInput = customColorWrap.querySelector(`.custom-color-text[data-var="${input.dataset.var}"]`);
-        if (textInput) textInput.value = input.value;
-        refreshPreview();
-        saveState();
-      });
-    });
-
-    // 커스텀 색상 input (text)
-    customColorWrap.querySelectorAll('.custom-color-text').forEach(input => {
-      input.addEventListener('input', debounce(() => {
-        updateCustomVar(input.dataset.var, input.value);
-        const colorInput = customColorWrap.querySelector(`.custom-color-input[data-var="${input.dataset.var}"]`);
-        if (colorInput && !input.value.includes('gradient')) {
-          colorInput.value = input.value;
-        }
-        refreshPreview();
-        saveState();
-      }, 300));
-    });
-
-    // 둥글기 (border-radius)
-    const radiusInput = customColorWrap.querySelector('.custom-radius-input');
-    if (radiusInput) {
-      radiusInput.addEventListener('input', () => {
-        updateCustomVar('--sw-radius', radiusInput.value + 'px');
-        const label = radiusInput.closest('.form-group').querySelector('.form-label');
-        if (label) label.textContent = `둥글기 (border-radius): ${radiusInput.value}px`;
-        refreshPreview();
-        saveState();
-      });
-    }
-
-    // 폰트
-    const fontInput = customColorWrap.querySelector('.custom-font-input');
-    if (fontInput) {
-      fontInput.addEventListener('change', () => {
-        updateCustomVar('--sw-font', fontInput.value);
-        refreshPreview();
-        saveState();
-      });
-    }
-  }
-
-  /* ══════════════════════════════════════════════════════════
      빌더 UI 다크/라이트 토글
      ══════════════════════════════════════════════════════════ */
   function bindThemeToggle() {
@@ -488,7 +416,6 @@
         $('#cfgPlaceAI').checked = state.config.placeAI !== false;
         $('#cfgPlaceUser').checked = !!state.config.placeUser;
 
-        renderThemeUI();
         renderFieldList();
         refreshPreview();
         saveState();
