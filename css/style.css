@@ -32,11 +32,17 @@
   --c-success: #10b981;
   --c-success-light: #ecfdf5;
 
+  /* 꾸밈용 그라데이션 */
+  --c-gradient-1: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --c-gradient-2: linear-gradient(135deg, #f0f1f5 0%, #eef2ff 100%);
+  --c-gradient-soft: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(168,85,247,0.05), rgba(236,72,153,0.05));
+
   /* 그림자 */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
   --shadow-glow: 0 0 20px rgba(99,102,241,0.15);
+  --shadow-glow-lg: 0 0 40px rgba(99,102,241,0.12), 0 0 80px rgba(168,85,247,0.06);
 
   /* 레이아웃 */
   --radius-sm: 6px;
@@ -74,10 +80,14 @@
   --c-danger-light: rgba(239,68,68,0.12);
   --c-success-light: rgba(16,185,129,0.12);
 
+  --c-gradient-2: linear-gradient(135deg, #1a1d28 0%, #242736 100%);
+  --c-gradient-soft: linear-gradient(135deg, rgba(129,140,248,0.06), rgba(168,85,247,0.06), rgba(236,72,153,0.04));
+
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
   --shadow-glow: 0 0 24px rgba(129,140,248,0.2);
+  --shadow-glow-lg: 0 0 40px rgba(129,140,248,0.15), 0 0 80px rgba(168,85,247,0.08);
 }
 
 /* ============================================================
@@ -146,6 +156,22 @@ a:hover { color: var(--c-primary-hover); }
   40%, 80% { transform: translateX(4px); }
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .anim-fade-in-up {
   animation: fadeInUp 0.45s ease both;
 }
@@ -184,6 +210,18 @@ a:hover { color: var(--c-primary-hover); }
   transition: background var(--transition-normal), border-color var(--transition-normal);
 }
 
+/* 헤더 하단에 그라데이션 라인 장식 */
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--c-gradient-1);
+  opacity: 0.6;
+}
+
 .app-logo {
   display: flex;
   align-items: center;
@@ -197,6 +235,7 @@ a:hover { color: var(--c-primary-hover); }
 
 .app-logo .logo-icon {
   font-size: 1.5rem;
+  animation: float 3s ease-in-out infinite;
 }
 
 .header-actions {
@@ -371,20 +410,24 @@ a:hover { color: var(--c-primary-hover); }
   border-bottom-color: var(--c-primary);
 }
 
-/* ── 에디터 패널 ── */
+/* ── 에디터 패널 (수정: 스크롤 문제 해결) ── */
 .editor-panel {
   width: var(--sidebar-w);
   min-width: 360px;
   max-width: 50vw;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--c-surface);
   border-right: 1px solid var(--c-border);
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   transition: background var(--transition-normal), border-color var(--transition-normal);
+  /* 스크롤을 부드럽게 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── 미리보기 패널 ── */
@@ -397,12 +440,43 @@ a:hover { color: var(--c-primary-hover); }
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+}
+
+/* 미리보기 배경 장식: 도트 패턴 */
+.preview-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--c-border) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* 미리보기 배경 장식: 코너 그라데이션 글로우 */
+.preview-panel::after {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+[data-theme="dark"] .preview-panel::after {
+  background: radial-gradient(circle, rgba(129,140,248,0.1) 0%, transparent 70%);
 }
 
 .preview-wrapper {
   width: 100%;
   max-width: 620px;
   animation: fadeInUp 0.5s ease both;
+  position: relative;
+  z-index: 1;
 }
 
 .preview-label {
@@ -412,6 +486,21 @@ a:hover { color: var(--c-primary-hover); }
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 실시간 표시 점 */
+.preview-label::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-success);
+  box-shadow: 0 0 8px rgba(16,185,129,0.5);
+  animation: pulse 2s ease-in-out infinite;
 }
 
 .preview-frame {
@@ -421,10 +510,24 @@ a:hover { color: var(--c-primary-hover); }
   box-shadow: var(--shadow-md);
   overflow: hidden;
   transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+  position: relative;
 }
 
 .preview-frame:hover {
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-lg);
+}
+
+/* 프레임 상단 그라데이션 악센트 바 */
+.preview-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--c-gradient-1);
+  opacity: 0.5;
+  z-index: 1;
 }
 
 .preview-html {
@@ -441,6 +544,7 @@ a:hover { color: var(--c-primary-hover); }
   border-radius: var(--radius-md);
   overflow: hidden;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .editor-section:hover {
@@ -489,9 +593,11 @@ a:hover { color: var(--c-primary-hover); }
   transition: max-height var(--transition-slow), padding var(--transition-normal);
 }
 
+/* ★ 핵심 수정: max-height 값을 크게 늘려서 잘림 방지 */
 .editor-section.open .editor-section-body {
-  max-height: 2000px;
+  max-height: 9999px;
   padding: 0 14px 14px;
+  overflow: visible;
 }
 
 /* ============================================================
@@ -614,6 +720,8 @@ a:hover { color: var(--c-primary-hover); }
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* 필드 목록이 넘쳐도 정상 표시 */
+  overflow: visible;
 }
 
 .field-card {
@@ -624,11 +732,14 @@ a:hover { color: var(--c-primary-hover); }
   cursor: grab;
   transition: all var(--transition-fast);
   animation: fadeInUp 0.3s ease both;
+  /* 카드 왼쪽에 타입별 컬러 악센트 */
+  border-left: 3px solid var(--c-primary);
 }
 
 .field-card:hover {
   border-color: var(--c-primary);
-  box-shadow: var(--shadow-sm);
+  border-left-color: var(--c-primary);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--c-primary-light);
   transform: translateY(-1px);
 }
 
@@ -729,10 +840,16 @@ a:hover { color: var(--c-primary-hover); }
   color: var(--c-primary);
   background: var(--c-primary-light);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .add-field-btn .add-icon {
   font-size: 1.2rem;
+  transition: transform var(--transition-fast);
+}
+
+.add-field-btn:hover .add-icon {
+  transform: scale(1.2);
 }
 
 /* ============================================================
@@ -821,6 +938,7 @@ a:hover { color: var(--c-primary-hover); }
   pointer-events: auto;
   animation: fadeInUp 0.3s ease both;
   max-width: 320px;
+  backdrop-filter: blur(8px);
 }
 
 .toast.toast-success { border-left: 3px solid var(--c-success); }
@@ -898,6 +1016,7 @@ a:hover { color: var(--c-primary-hover); }
   font-size: 2.5rem;
   margin-bottom: 10px;
   opacity: 0.4;
+  animation: float 3s ease-in-out infinite;
 }
 
 .empty-state .empty-text {
